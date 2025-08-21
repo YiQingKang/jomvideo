@@ -1,0 +1,15 @@
+node_modules
+docs
+testdata
+.DS_Store
+.env
+logs/*
+config/config.json
+config/docker-compose.yml
+.vscode
+tmp
+yarn.lock
+storage
+db/
+_tmp_files
+server/.env
