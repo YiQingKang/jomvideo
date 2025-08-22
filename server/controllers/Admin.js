@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const Models = require("../models");
+const { Op } = require('sequelize');
 
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -95,6 +96,123 @@ class AdminController {
 
   static async logout(req, res) {
     res.json({ message: 'Logged out successfully' });
+  };
+
+  static async getUsers(req, res) {
+    try {
+      const { page = 1, limit = 10, search, status } = req.query;
+      const offset = (page - 1) * limit;
+
+      const where = {};
+      if (search) {
+        where[Op.or] = [
+          { name: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } },
+        ];
+      }
+      if (status && status !== 'all') {
+        where.status = status;
+      }
+
+      const { rows: users, count } = await Models.user.findAndCountAll({
+        where,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        order: [['created_at', 'DESC']],
+      });
+
+      res.json({
+        users,
+        pagination: {
+          current: parseInt(page),
+          pages: Math.ceil(count / limit),
+          total: count,
+        },
+      });
+    } catch (error) {
+      console.error('Get users error:', error);
+      res.status(500).json({ message: 'Failed to fetch users' });
+    }
+  };
+
+  static async updateUserStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const user = await Models.user.findByPk(id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      user.status = status;
+      await user.save();
+
+      res.json({ message: 'User status updated successfully', user });
+    } catch (error) {
+      console.error('Update user status error:', error);
+      res.status(500).json({ message: 'Failed to update user status' });
+    }
+  };
+
+  static async getVideos(req, res) {
+    try {
+      const { page = 1, limit = 10, search, status } = req.query;
+      const offset = (page - 1) * limit;
+
+      const where = {};
+      if (search) {
+        where[Op.or] = [
+          { title: { [Op.iLike]: `%${search}%` } },
+          { prompt: { [Op.iLike]: `%${search}%` } },
+        ];
+      }
+      if (status && status !== 'all') {
+        where.status = status;
+      }
+
+      const { rows: videos, count } = await Models.video.findAndCountAll({
+        where,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        order: [['created_at', 'DESC']],
+        include: [{
+          model: Models.user,
+          as: 'user',
+          attributes: ['id', 'name', 'email']
+        }]
+      });
+
+      res.json({
+        videos,
+        pagination: {
+          current: parseInt(page),
+          pages: Math.ceil(count / limit),
+          total: count,
+        },
+      });
+    } catch (error) {
+      console.error('Get videos error:', error);
+      res.status(500).json({ message: 'Failed to fetch videos' });
+    }
+  };
+
+  static async deleteVideo(req, res) {
+    try {
+      const { id } = req.params;
+
+      const video = await Models.video.findByPk(id);
+      if (!video) {
+        return res.status(404).json({ message: 'Video not found' });
+      }
+
+      await video.destroy();
+
+      res.json({ message: 'Video deleted successfully' });
+    } catch (error) {
+      console.error('Delete video error:', error);
+      res.status(500).json({ message: 'Failed to delete video' });
+    }
   };
 }
 

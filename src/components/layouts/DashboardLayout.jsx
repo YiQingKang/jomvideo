@@ -32,7 +32,7 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
+  const userDashboardMenuItems = [
     {
       key: '/dashboard',
       icon: <DashboardOutlined />,
@@ -60,15 +60,34 @@ const DashboardLayout = () => {
     },
   ];
 
-  if (user?.role === 'admin') {
-    menuItems.push({
-      key: '/dashboard/admin',
-      icon: <SettingOutlined />,
-      label: 'Admin Panel',
-    });
-  }
+  const adminDashboardMenuItems = [
+    {
+      key: '/admin/dashboard',
+      icon: <DashboardOutlined />,
+      label: 'Admin Dashboard',
+    },
+    {
+      key: '/admin/dashboard/users',
+      icon: <UserOutlined />,
+      label: 'User Management',
+    },
+    {
+      key: '/admin/dashboard/videos',
+      icon: <VideoCameraOutlined />,
+      label: 'Video Management',
+    },
+    {
+      key: '/admin/dashboard/profile',
+      icon: <UserOutlined />,
+      label: 'Profile',
+    },
+  ];
 
-  const userMenuItems = [
+  const currentMenuItems = location.pathname.startsWith('/admin') 
+    ? adminDashboardMenuItems 
+    : userDashboardMenuItems;
+
+  const userProfileMenuItems = [
     {
       key: 'profile',
       icon: <UserOutlined />,
@@ -111,7 +130,7 @@ const DashboardLayout = () => {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
-          items={menuItems}
+          items={currentMenuItems}
           className="border-none"
           onClick={({ key }) => navigate(key)}
         />
@@ -151,7 +170,7 @@ const DashboardLayout = () => {
             </div>
             
             <Dropdown
-              menu={{ items: userMenuItems }}
+              menu={{ items: userProfileMenuItems }}
               placement="bottomRight"
               arrow
             >

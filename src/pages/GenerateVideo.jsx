@@ -10,17 +10,21 @@ import {
   Alert, 
   Progress,
   Space,
-  Divider
+  Divider,
+  message
 } from 'antd';
 import { VideoCameraOutlined, SendOutlined, CreditCardOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
 const GenerateVideo = () => {
-  const { user } = useAuth();
+  const { user, fetchUser } = useAuth();
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -55,26 +59,46 @@ const GenerateVideo = () => {
 
   const onFinish = async (values) => {
     if ((user?.credits || 0) < estimatedCost) {
+      message.error('Insufficient credits to generate this video.');
       return;
     }
 
     setGenerating(true);
     setProgress(0);
 
-    // Simulate video generation progress
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setGenerating(false);
-          return 100;
+    try {
+      const response = await axios.post('/api/video/generate', {
+        title: values.prompt.substring(0, 30), // Auto-generate title
+        prompt: values.prompt,
+        negative_prompt: values.negative_prompt,
+        settings: {
+          orientation: values.orientation,
+          resolution: values.resolution,
+          duration: values.duration,
+          style: values.style,
+          seed: values.seed,
         }
-        return prev + Math.random() * 15;
       });
-    }, 1000);
 
-    // This would be replaced with actual API call
-    console.log('Generating video with:', values);
+      // Simulate generation progress for demo purposes
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setGenerating(false);
+            message.success('Video generated successfully!');
+            fetchUser(); // Update credits
+            navigate('/dashboard/history');
+            return 100;
+          }
+          return prev + Math.random() * 25;
+        });
+      }, 500);
+
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Failed to start video generation.');
+      setGenerating(false);
+    }
   };
 
   return (
@@ -96,7 +120,7 @@ const GenerateVideo = () => {
           type="warning"
           showIcon
           action={
-            <Button type="primary" size="small">
+            <Button type="primary" size="small" onClick={() => navigate('/dashboard/credits')}>
               Buy Credits
             </Button>
           }
@@ -248,7 +272,7 @@ const GenerateVideo = () => {
 
           {/* Generation Progress */}
           {generating && (
-            <Card className="bg-blue-50 border border-blue-200">
+            <Card className="bg-blue-50 border border-blue-200 mt-6">
               <div className="text-center">
                 <Title level={4} className="!mb-4">
                   Generating Your Video...
@@ -266,7 +290,7 @@ const GenerateVideo = () => {
           )}
 
           {/* Submit Button */}
-          <Form.Item className="!mb-0">
+          <Form.Item className="!mt-6 !mb-0">
             <Button
               type="primary"
               htmlType="submit"

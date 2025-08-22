@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   Row, 
@@ -19,13 +19,17 @@ import {
   TrophyOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 const { Title, Text, Paragraph } = Typography;
 
 const Credits = () => {
-  const { user } = useAuth();
+  const { user, fetchUser } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [usageHistory, setUsageHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
 
   const creditPackages = [
     {
@@ -75,53 +79,31 @@ const Credits = () => {
     }
   ];
 
-  const usageHistory = [
-    {
-      key: '1',
-      date: '2024-01-15',
-      description: 'Product Launch Video - 1080p Landscape',
-      credits: -2,
-      type: 'usage',
-      status: 'completed'
-    },
-    {
-      key: '2',
-      date: '2024-01-14',
-      description: 'Pro Pack Purchase',
-      credits: +50,
-      type: 'purchase',
-      status: 'completed'
-    },
-    {
-      key: '3',
-      date: '2024-01-14',
-      description: 'Social Media Promo - 720p Portrait',
-      credits: -1,
-      type: 'usage',
-      status: 'completed'
-    },
-    {
-      key: '4',
-      date: '2024-01-13',
-      description: 'Brand Story Video - 4K Landscape',
-      credits: -4,
-      type: 'usage',
-      status: 'processing'
-    },
-    {
-      key: '5',
-      date: '2024-01-12',
-      description: 'Tutorial Introduction - 1080p Landscape',
-      credits: -2,
-      type: 'usage',
-      status: 'completed'
+  const fetchHistory = async (page = 1, pageSize = 10) => {
+    setHistoryLoading(true);
+    try {
+      const response = await axios.get(`/api/credit/transactions?page=${page}&limit=${pageSize}`);
+      setUsageHistory(response.data.transactions);
+      setPagination({
+        current: response.data.pagination.current,
+        pageSize: pageSize,
+        total: response.data.pagination.total,
+      });
+    } catch (error) {
+      message.error('Failed to fetch usage history.');
+    } finally {
+      setHistoryLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
   const usageColumns = [
     {
       title: 'Date',
-      dataIndex: 'date',
+      dataIndex: 'created_at',
       key: 'date',
       render: (date) => new Date(date).toLocaleDateString()
     },
@@ -131,46 +113,49 @@ const Credits = () => {
       key: 'description'
     },
     {
-      title: 'Credits',
-      dataIndex: 'credits',
-      key: 'credits',
-      render: (credits) => (
-        <Tag color={credits > 0 ? 'green' : 'red'}>
-          {credits > 0 ? '+' : ''}{credits}
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount) => (
+        <Tag color={amount > 0 ? 'green' : 'red'}>
+          {amount > 0 ? '+' : ''}{amount}
         </Tag>
       )
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={status === 'completed' ? 'green' : 'blue'}>
-          {status}
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+      render: (type) => (
+        <Tag color={type === 'purchase' ? 'blue' : 'orange'}>
+          {type}
         </Tag>
       )
     }
   ];
 
-  const handlePurchase = async (packageInfo) => {
+  const handlePurchase = async (paymentMethod) => {
     setLoading(true);
     try {
-      // This would integrate with Stripe/PayPal
-      console.log('Purchasing package:', packageInfo);
+      await axios.post('/api/credit/purchase', {
+        package_id: selectedPlan.id,
+        payment_method: paymentMethod,
+      });
       
-      // Simulate payment process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      message.success(`Successfully purchased ${packageInfo.credits} credits!`);
+      message.success(`Successfully purchased ${selectedPlan.credits} credits!`);
       setSelectedPlan(null);
-      
-      // Would normally refresh user data here
+      fetchUser(); // Refresh user data (credits)
+      fetchHistory(); // Refresh usage history
       
     } catch (error) {
-      message.error('Payment failed. Please try again.');
+      message.error(error.response?.data?.message || 'Payment failed. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTableChange = (pagination) => {
+    fetchHistory(pagination.current, pagination.pageSize);
   };
 
   return (
@@ -277,7 +262,10 @@ const Credits = () => {
         <Table
           columns={usageColumns}
           dataSource={usageHistory}
-          pagination={{ pageSize: 10 }}
+          loading={historyLoading}
+          pagination={pagination}
+          onChange={handleTableChange}
+          rowKey="id"
           className="overflow-x-auto"
         />
       </Card>
@@ -330,7 +318,7 @@ const Credits = () => {
                 size="large"
                 className="w-full h-12"
                 loading={loading}
-                onClick={() => handlePurchase(selectedPlan)}
+                onClick={() => handlePurchase('stripe')}
               >
                 Pay with Stripe
               </Button>
@@ -338,7 +326,7 @@ const Credits = () => {
                 size="large"
                 className="w-full h-12"
                 loading={loading}
-                onClick={() => handlePurchase(selectedPlan)}
+                onClick={() => handlePurchase('paypal')}
               >
                 Pay with PayPal
               </Button>

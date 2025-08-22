@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 const { Title, Text } = Typography;
 
@@ -19,40 +20,41 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [recentVideos, setRecentVideos] = useState([]);
   const [stats, setStats] = useState({
-    totalVideos: 12,
-    creditsUsed: 45,
-    totalDownloads: 8,
-    successRate: 95
+    totalVideos: 0,
+    creditsUsed: 0,
+    totalDownloads: 0,
+    successRate: 0
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock recent videos data
-    setRecentVideos([
-      {
-        id: 1,
-        title: 'Product Launch Video',
-        thumbnail: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=300',
-        status: 'completed',
-        createdAt: '2024-01-15',
-        duration: '0:30'
-      },
-      {
-        id: 2,
-        title: 'Social Media Promo',
-        thumbnail: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=300',
-        status: 'completed',
-        createdAt: '2024-01-14',
-        duration: '0:15'
-      },
-      {
-        id: 3,
-        title: 'Brand Story Video',
-        thumbnail: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=300',
-        status: 'processing',
-        createdAt: '2024-01-13',
-        duration: '1:00'
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [statsResponse, videosResponse] = await Promise.all([
+          axios.get('/api/user/stats'),
+          axios.get('/api/video?limit=5')
+        ]);
+
+        const { totalVideos, totalCreditsUsed, completedVideos } = statsResponse.data;
+        const successRate = totalVideos > 0 ? (completedVideos / totalVideos) * 100 : 0;
+
+        setStats({
+          totalVideos,
+          creditsUsed: totalCreditsUsed,
+          totalDownloads: 0, // This needs to be calculated differently
+          successRate: Math.round(successRate)
+        });
+
+        setRecentVideos(videosResponse.data.videos);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+      } finally {
+        setLoading(false);
       }
-    ]);
+    };
+
+    fetchDashboardData();
   }, []);
 
   const quickActions = [
@@ -91,7 +93,7 @@ const Dashboard = () => {
       {/* Stats Cards */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card loading={loading}>
             <Statistic
               title="Total Videos"
               value={stats.totalVideos}
@@ -101,7 +103,7 @@ const Dashboard = () => {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card loading={loading}>
             <Statistic
               title="Credits Remaining"
               value={user?.credits || 0}
@@ -111,17 +113,17 @@ const Dashboard = () => {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card loading={loading}>
             <Statistic
-              title="Downloads"
-              value={stats.totalDownloads}
-              prefix={<DownloadOutlined />}
+              title="Credits Used"
+              value={stats.creditsUsed}
+              prefix={<CreditCardOutlined />}
               valueStyle={{ color: '#722ed1' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card loading={loading}>
             <Statistic
               title="Success Rate"
               value={stats.successRate}
@@ -168,6 +170,7 @@ const Dashboard = () => {
               </Button>
             }
             className="h-full"
+            loading={loading}
           >
             <List
               itemLayout="horizontal"
@@ -175,10 +178,10 @@ const Dashboard = () => {
               renderItem={(video) => (
                 <List.Item
                   actions={[
-                    <Button type="text" icon={<DownloadOutlined />} key="download">
+                    <Button type="text" icon={<DownloadOutlined />} key="download" disabled={video.status !== 'completed'}>
                       Download
                     </Button>,
-                    <Button type="text" icon={<ShareAltOutlined />} key="share">
+                    <Button type="text" icon={<ShareAltOutlined />} key="share" disabled={video.status !== 'completed'}>
                       Share
                     </Button>
                   ]}
@@ -186,7 +189,7 @@ const Dashboard = () => {
                   <List.Item.Meta
                     avatar={
                       <Avatar 
-                        src={video.thumbnail} 
+                        src={video.thumbnail_url} 
                         shape="square" 
                         size={64}
                         icon={<VideoCameraOutlined />}
@@ -195,17 +198,17 @@ const Dashboard = () => {
                     title={
                       <div className="flex items-center space-x-2">
                         <Text className="font-medium">{video.title}</Text>
-                        <Tag color={video.status === 'completed' ? 'green' : 'processing'}>
+                        <Tag color={video.status === 'completed' ? 'green' : (video.status === 'failed' ? 'red' : 'processing')}>
                           {video.status}
                         </Tag>
                       </div>
                     }
                     description={
                       <div className="space-y-1">
-                        <Text className="text-gray-500">Duration: {video.duration}</Text>
-                        <Text className="text-gray-500">Created: {video.createdAt}</Text>
+                        <Text className="text-gray-500">Duration: {video.duration || 'N/A'}s</Text>
+                        <Text className="text-gray-500">Created: {new Date(video.created_at).toLocaleDateString()}</Text>
                         {video.status === 'processing' && (
-                          <Progress percent={65} size="small" />
+                          <Progress percent={50} size="small" status="active" />
                         )}
                       </div>
                     }

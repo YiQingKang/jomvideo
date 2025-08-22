@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import GenerateVideo from './pages/GenerateVideo';
@@ -12,6 +13,8 @@ import VideoHistory from './pages/VideoHistory';
 import Profile from './pages/Profile';
 import Credits from './pages/Credits';
 import AdminPanel from './pages/AdminPanel';
+import AdminUserManagement from './pages/AdminUserManagement';
+import AdminVideoManagement from './pages/AdminVideoManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = {
@@ -33,6 +36,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <DashboardLayout />
@@ -43,7 +47,16 @@ function App() {
             <Route path="history" element={<VideoHistory />} />
             <Route path="profile" element={<Profile />} />
             <Route path="credits" element={<Credits />} />
-            <Route path="admin" element={<AdminPanel />} />
+          </Route>
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute requiredRole="admin">
+              <DashboardLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<AdminPanel />} />
+            <Route path="users" element={<AdminUserManagement />} />
+            <Route path="videos" element={<AdminVideoManagement />} />
+            <Route path="profile" element={<Profile isAdmin={true} />} />
           </Route>
         </Routes>
       </AuthProvider>

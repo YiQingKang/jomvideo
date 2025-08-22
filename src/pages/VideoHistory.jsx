@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Card, 
   Row, 
@@ -11,7 +11,9 @@ import {
   Modal,
   Typography,
   Space,
-  Tooltip
+  Tooltip,
+  Pagination,
+  message
 } from 'antd';
 import {
   SearchOutlined,
@@ -21,6 +23,7 @@ import {
   PlayCircleOutlined,
   FilterOutlined
 } from '@ant-design/icons';
+import api from '../utils/api';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -28,109 +31,63 @@ const { Option } = Select;
 
 const VideoHistory = () => {
   const [videos, setVideos] = useState([]);
-  const [filteredVideos, setFilteredVideos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
 
-  useEffect(() => {
-    // Mock video data
-    const mockVideos = [
-      {
-        id: 1,
-        title: 'Product Launch Video',
-        prompt: 'A sleek product showcase with dynamic lighting and smooth transitions',
-        thumbnail: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400',
-        videoUrl: 'https://example.com/video1.mp4',
-        status: 'completed',
-        duration: '00:30',
-        resolution: '1080p',
-        orientation: 'landscape',
-        createdAt: '2024-01-15T10:30:00Z',
-        creditsUsed: 2
-      },
-      {
-        id: 2,
-        title: 'Social Media Promo',
-        prompt: 'Vibrant colors, fast-paced editing, modern typography for social media',
-        thumbnail: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=400',
-        videoUrl: 'https://example.com/video2.mp4',
-        status: 'completed',
-        duration: '00:15',
-        resolution: '720p',
-        orientation: 'portrait',
-        createdAt: '2024-01-14T14:22:00Z',
-        creditsUsed: 1
-      },
-      {
-        id: 3,
-        title: 'Brand Story Video',
-        prompt: 'Emotional storytelling with warm colors and gentle transitions',
-        thumbnail: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=400',
-        videoUrl: null,
-        status: 'processing',
-        duration: '01:00',
-        resolution: '4K',
-        orientation: 'landscape',
-        createdAt: '2024-01-13T09:15:00Z',
-        creditsUsed: 4
-      },
-      {
-        id: 4,
-        title: 'Tutorial Introduction',
-        prompt: 'Clean, professional look with step-by-step visual guide',
-        thumbnail: 'https://images.pexels.com/photos/3184339/pexels-photo-3184339.jpeg?auto=compress&cs=tinysrgb&w=400',
-        videoUrl: 'https://example.com/video4.mp4',
-        status: 'completed',
-        duration: '00:45',
-        resolution: '1080p',
-        orientation: 'landscape',
-        createdAt: '2024-01-12T16:45:00Z',
-        creditsUsed: 2
-      },
-      {
-        id: 5,
-        title: 'Event Highlight',
-        prompt: 'Dynamic event coverage with energetic music and quick cuts',
-        thumbnail: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=400',
-        videoUrl: null,
-        status: 'failed',
-        duration: '00:20',
-        resolution: '1080p',
-        orientation: 'square',
-        createdAt: '2024-01-11T11:20:00Z',
-        creditsUsed: 2
-      },
-    ];
-
-    setVideos(mockVideos);
-    setFilteredVideos(mockVideos);
-  }, []);
-
-  useEffect(() => {
-    let filtered = videos.filter(video =>
-      video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      video.prompt.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(video => video.status === filterStatus);
+  const fetchVideos = useCallback(async (page = 1, limit = 10) => {
+    setLoading(true);
+    try {
+      const params = {
+        page,
+        limit,
+        ...(searchTerm && { search: searchTerm }),
+        ...(filterStatus !== 'all' && { status: filterStatus }),
+      };
+      const response = await api.get('/api/video', { params });
+      setVideos(response.data.videos);
+      setPagination({
+        current: response.data.pagination.current,
+        pageSize: limit,
+        total: response.data.pagination.total,
+      });
+    } catch (error) {
+      message.error('Failed to fetch videos.');
+      console.error('Error fetching videos:', error);
+    } finally {
+      setLoading(false);
     }
+  }, [searchTerm, filterStatus]);
 
-    setFilteredVideos(filtered);
-  }, [searchTerm, filterStatus, videos]);
+  useEffect(() => {
+    fetchVideos(pagination.current, pagination.pageSize);
+  }, [fetchVideos, pagination.current, pagination.pageSize]);
+
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setPagination(prev => ({ ...prev, current: 1 }));
+  };
+
+  const handleFilterChange = (value) => {
+    setFilterStatus(value);
+    setPagination(prev => ({ ...prev, current: 1 }));
+  };
+
+  const handlePageChange = (page, pageSize) => {
+    setPagination(prev => ({ ...prev, current: page, pageSize }));
+  };
 
   const handleShare = (video) => {
     if (navigator.share) {
       navigator.share({
         title: video.title,
         text: `Check out this AI-generated video: ${video.title}`,
-        url: video.videoUrl
+        url: video.video_url
       });
     } else {
-      // Fallback for browsers that don't support Web Share API
-      navigator.clipboard.writeText(video.videoUrl);
+      navigator.clipboard.writeText(video.video_url);
       Modal.success({
         title: 'Link Copied!',
         content: 'Video link has been copied to clipboard.',
@@ -145,8 +102,15 @@ const VideoHistory = () => {
       okText: 'Delete',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk() {
-        setVideos(prev => prev.filter(v => v.id !== video.id));
+      onOk: async () => {
+        try {
+          await api.delete(`/video/${video.id}`);
+          message.success('Video deleted successfully!');
+          fetchVideos(pagination.current, pagination.pageSize); // Re-fetch videos
+        } catch (error) {
+          message.error('Failed to delete video.');
+          console.error('Error deleting video:', error);
+        }
       },
     });
   };
@@ -177,7 +141,7 @@ const VideoHistory = () => {
           Video History
         </Title>
         <Text className="text-gray-600">
-          {filteredVideos.length} video{filteredVideos.length !== 1 ? 's' : ''}
+          {pagination.total} video{pagination.total !== 1 ? 's' : ''}
         </Text>
       </div>
 
@@ -188,13 +152,14 @@ const VideoHistory = () => {
             placeholder="Search videos by title or prompt..."
             enterButton={<SearchOutlined />}
             size="large"
+            onSearch={handleSearch}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1"
           />
           <Select
             size="large"
             defaultValue="all"
-            onChange={setFilterStatus}
+            onChange={handleFilterChange}
             className="w-full sm:w-48"
             suffixIcon={<FilterOutlined />}
           >
@@ -207,7 +172,9 @@ const VideoHistory = () => {
       </Card>
 
       {/* Video Grid */}
-      {filteredVideos.length === 0 ? (
+      {loading ? (
+        <Card loading={true} style={{ minHeight: '300px' }} />
+      ) : videos?.length === 0 ? (
         <Card>
           <Empty
             description="No videos found"
@@ -219,92 +186,104 @@ const VideoHistory = () => {
           </Empty>
         </Card>
       ) : (
-        <Row gutter={[16, 16]}>
-          {filteredVideos.map((video) => (
-            <Col xs={24} sm={12} lg={8} xl={6} key={video.id}>
-              <Card
-                className="h-full hover:shadow-lg transition-shadow duration-300"
-                cover={
-                  <div className="relative">
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <Button
-                        type="primary"
-                        shape="circle"
-                        size="large"
-                        icon={<PlayCircleOutlined />}
-                        onClick={() => setSelectedVideo(video)}
+        <>
+          <Row gutter={[16, 16]}>
+            {videos?.map((video) => (
+              <Col xs={24} sm={12} lg={8} xl={6} key={video.id}>
+                <Card
+                  className="h-full hover:shadow-lg transition-shadow duration-300"
+                  cover={
+                    <div className="relative">
+                      <img
+                        src={video.thumbnail_url}
+                        alt={video.title}
+                        className="w-full h-48 object-cover"
                       />
-                    </div>
-                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-                      {video.duration}
-                    </div>
-                  </div>
-                }
-                actions={[
-                  <Tooltip title="Download">
-                    <Button
-                      type="text"
-                      icon={<DownloadOutlined />}
-                      disabled={video.status !== 'completed'}
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = video.videoUrl;
-                        link.download = `${video.title}.mp4`;
-                        link.click();
-                      }}
-                    />
-                  </Tooltip>,
-                  <Tooltip title="Share">
-                    <Button
-                      type="text"
-                      icon={<ShareAltOutlined />}
-                      disabled={video.status !== 'completed'}
-                      onClick={() => handleShare(video)}
-                    />
-                  </Tooltip>,
-                  <Tooltip title="Delete">
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDelete(video)}
-                    />
-                  </Tooltip>
-                ]}
-              >
-                <Card.Meta
-                  title={
-                    <div className="flex justify-between items-start">
-                      <Text className="font-medium" ellipsis>{video.title}</Text>
-                      <Tag color={getStatusColor(video.status)} className="ml-2">
-                        {video.status}
-                      </Tag>
-                    </div>
-                  }
-                  description={
-                    <div className="space-y-2">
-                      <Text className="text-sm text-gray-600" ellipsis={{ rows: 2 }}>
-                        {video.prompt}
-                      </Text>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>{video.resolution} • {video.orientation}</span>
-                        <span>{video.creditsUsed} credits</span>
+                      <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <Button
+                          type="primary"
+                          shape="circle"
+                          size="large"
+                          icon={<PlayCircleOutlined />}
+                          onClick={() => setSelectedVideo(video)}
+                        />
                       </div>
-                      <Text className="text-xs text-gray-400">
-                        {formatDate(video.createdAt)}
-                      </Text>
+                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                        {video.duration}s
+                      </div>
                     </div>
                   }
-                />
-              </Card>
-            </Col>
-          ))}
-        </Row>
+                  actions={[
+                    <Tooltip title="Download">
+                      <Button
+                        type="text"
+                        icon={<DownloadOutlined />}
+                        disabled={video.status !== 'completed'}
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = video.video_url;
+                          link.download = `${video.title}.mp4`;
+                          link.click();
+                        }}
+                      />
+                    </Tooltip>,
+                    <Tooltip title="Share">
+                      <Button
+                        type="text"
+                        icon={<ShareAltOutlined />}
+                        disabled={video.status !== 'completed'}
+                        onClick={() => handleShare(video)}
+                      />
+                    </Tooltip>,
+                    <Tooltip title="Delete">
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDelete(video)}
+                      />
+                    </Tooltip>
+                  ]}
+                >
+                  <Card.Meta
+                    title={
+                      <div className="flex justify-between items-start">
+                        <Text className="font-medium" ellipsis>{video.title}</Text>
+                        <Tag color={getStatusColor(video.status)} className="ml-2">
+                          {video.status}
+                        </Tag>
+                      </div>
+                    }
+                    description={
+                      <div className="space-y-2">
+                        <Text className="text-sm text-gray-600" ellipsis={{ rows: 2 }}>
+                          {video.prompt}
+                        </Text>
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>{video.resolution} • {video.orientation}</span>
+                          <span>{video.credits_used} credits</span>
+                        </div>
+                        <Text className="text-xs text-gray-400">
+                          {formatDate(video.created_at)}
+                        </Text>
+                      </div>
+                    }
+                  />
+                </Card>
+              </Col>
+            ))}
+          </Row>
+          <div className="text-center mt-6">
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handlePageChange}
+              showSizeChanger
+              onShowSizeChange={handlePageChange}
+            />
+          </div>
+        </>
       )}
 
       {/* Video Preview Modal */}
@@ -320,9 +299,9 @@ const VideoHistory = () => {
             <video
               controls
               className="w-full rounded-lg"
-              poster={selectedVideo.thumbnail}
+              poster={selectedVideo.thumbnail_url}
             >
-              <source src={selectedVideo.videoUrl} type="video/mp4" />
+              <source src={selectedVideo.video_url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -335,10 +314,10 @@ const VideoHistory = () => {
               <div>
                 <Text className="font-medium">Details:</Text>
                 <div className="mt-1 space-y-1">
-                  <div>Duration: {selectedVideo.duration}</div>
-                  <div>Resolution: {selectedVideo.resolution}</div>
-                  <div>Orientation: {selectedVideo.orientation}</div>
-                  <div>Credits Used: {selectedVideo.creditsUsed}</div>
+                  <div>Duration: {selectedVideo.duration}s</div>
+                  <div>Resolution: {selectedVideo.settings?.resolution}</div>
+                  <div>Orientation: {selectedVideo.settings?.orientation}</div>
+                  <div>Credits Used: {selectedVideo.credits_used}</div>
                 </div>
               </div>
             </div>
