@@ -20,7 +20,7 @@ const RegisterPage = () => {
     });
     
     if (result.success) {
-      message.success('Registration successful! Welcome to VideoAI!');
+      message.success('Registration successful. Welcome to VideoAI.');
       navigate('/dashboard');
     } else {
       message.error(result.error);
@@ -51,8 +51,8 @@ const RegisterPage = () => {
               name="name"
               label="Full Name"
               rules={[
-                { required: true, message: 'Please enter your name!' },
-                { min: 2, message: 'Name must be at least 2 characters!' }
+                { required: true, message: 'Please enter your name' },
+                { min: 2, message: 'Name must be at least 2 characters' }
               ]}
             >
               <Input 
@@ -66,8 +66,8 @@ const RegisterPage = () => {
               name="email"
               label="Email"
               rules={[
-                { required: true, message: 'Please enter your email!' },
-                { type: 'email', message: 'Please enter a valid email!' }
+                { required: true, message: 'Please enter your email' },
+                { type: 'email', message: 'Please enter a valid email' }
               ]}
             >
               <Input 
@@ -81,8 +81,8 @@ const RegisterPage = () => {
               name="password"
               label="Password"
               rules={[
-                { required: true, message: 'Please enter your password!' },
-                { min: 6, message: 'Password must be at least 6 characters!' }
+                { required: true, message: 'Please enter your password' },
+                { min: 6, message: 'Password must be at least 6 characters' }
               ]}
             >
               <Input.Password
@@ -97,13 +97,13 @@ const RegisterPage = () => {
               label="Confirm Password"
               dependencies={['password']}
               rules={[
-                { required: true, message: 'Please confirm your password!' },
+                { required: true, message: 'Please confirm your password' },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
-                    if (!value || getFieldValue('password') === value) {
+                    if (value || getFieldValue('password') === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error('Passwords do not match!'));
+                    return Promise.reject(new Error('Passwords do not match'));
                   },
                 }),
               ]}
@@ -119,7 +119,7 @@ const RegisterPage = () => {
               name="agreement"
               valuePropName="checked"
               rules={[
-                { required: true, message: 'Please agree to the terms and conditions!' }
+                { required: true, message: 'Please agree to the terms and conditions' }
               ]}
             >
               <Checkbox>
@@ -145,7 +145,7 @@ const RegisterPage = () => {
           <Button
             icon={<GoogleOutlined />}
             className="w-full h-12 text-lg rounded-lg mb-4 border-gray-300"
-            onClick={() => message.info('Google registration coming soon!')}
+            onClick={() => message.info('Google registration coming soon')}
           >
             Sign up with Google
           </Button>

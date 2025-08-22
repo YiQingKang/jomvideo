@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const Models = require("../models");
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -100,7 +100,7 @@ class AdminController {
 
   static async getUsers(req, res) {
     try {
-      const { page = 1, limit = 10, search, status } = req.query;
+      const { page = 1, limit = 10, search, status, role } = req.query;
       const offset = (page - 1) * limit;
 
       const where = {};
@@ -113,12 +113,27 @@ class AdminController {
       if (status && status !== 'all') {
         where.status = status;
       }
+      if (role) {
+        where.role = role;
+      }
 
       const { rows: users, count } = await Models.user.findAndCountAll({
         where,
         limit: parseInt(limit),
         offset: parseInt(offset),
         order: [['created_at', 'DESC']],
+        attributes: {
+          include: [
+            [Sequelize.fn('COUNT', Sequelize.col('videos.id')), 'totalVideos'],
+          ],
+        },
+        include: [{
+          model: Models.video,
+          as: 'videos',
+          attributes: [],
+          duplicating: false,
+        }],
+        group: ['user.id'],
       });
 
       res.json({

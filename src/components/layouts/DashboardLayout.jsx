@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Layout,
@@ -6,7 +6,6 @@ import {
   Avatar,
   Dropdown,
   Button,
-  Badge,
   Typography,
 } from 'antd';
 import {
@@ -19,7 +18,6 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  BellOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -28,6 +26,7 @@ const { Text } = Typography;
 
 const DashboardLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -110,6 +109,15 @@ const DashboardLayout = () => {
     },
   ];
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // Example breakpoint for mobile
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Set initial value
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <Layout className="min-h-screen">
       <Sider
@@ -118,6 +126,21 @@ const DashboardLayout = () => {
         collapsed={collapsed}
         className="bg-white shadow-lg"
         width={250}
+        breakpoint="lg"
+        collapsedWidth={isMobile ? 0 : 80} // Collapse to 0 on mobile
+        onBreakpoint={(broken) => {
+          setIsMobile(broken);
+          setCollapsed(broken); // Collapse Sider when breakpoint is met
+        }}
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: isMobile ? 1000 : 'auto', // Overlay on mobile
+        }}
       >
         <div className="p-4 flex items-center justify-center border-b border-gray-100">
           <div className="flex items-center space-x-2">
@@ -132,12 +155,26 @@ const DashboardLayout = () => {
           selectedKeys={[location.pathname]}
           items={currentMenuItems}
           className="border-none"
-          onClick={({ key }) => navigate(key)}
+          onClick={({ key }) => {
+            navigate(key);
+            if (isMobile) {
+              setCollapsed(true); // Close Sider on mobile after click
+            }
+          }}
         />
       </Sider>
       
-      <Layout>
-        <Header className="bg-white shadow-sm px-4 flex items-center justify-between">
+      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 250) }}>
+        <Header 
+          className="bg-white shadow-sm px-4 flex items-center justify-between"
+          style={{
+            position: 'fixed',
+            zIndex: 1,
+            width: '100%',
+            top: 0,
+            right: 0,
+          }}
+        >
           <div className="flex items-center space-x-4">
             <Button
               type="text"
@@ -148,14 +185,9 @@ const DashboardLayout = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Badge count={3} size="small">
-              <Button
-                type="text"
-                icon={<BellOutlined />}
-                className="text-lg"
-              />
-            </Badge>
             
+            
+            {!user?.role === 'admin' && (
             <div className="flex items-center space-x-2">
               <Text className="text-sm text-gray-600">
                 {user?.credits || 0} credits
@@ -168,6 +200,7 @@ const DashboardLayout = () => {
                 Buy Credits
               </Button>
             </div>
+          )}
             
             <Dropdown
               menu={{ items: userProfileMenuItems }}
@@ -180,7 +213,7 @@ const DashboardLayout = () => {
                   icon={<UserOutlined />}
                   size={32}
                 />
-                <div className="hidden md:block">
+                <div className="hidden md:block" style={{ display: "flex", flexDirection: "column" }}>
                   <Text className="text-sm font-medium">{user?.name}</Text>
                   <Text className="text-xs text-gray-500 block">{user?.email}</Text>
                 </div>
@@ -189,7 +222,15 @@ const DashboardLayout = () => {
           </div>
         </Header>
         
-        <Content className="p-6 bg-gray-50">
+        <Content 
+          className="p-6 bg-gray-50"
+          style={{ marginTop: 64 }}
+          onClick={() => {
+            if (isMobile && !collapsed) {
+              setCollapsed(true); // Close Sider on content click
+            }
+          }}
+        >
           <Outlet />
         </Content>
       </Layout>

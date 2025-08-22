@@ -36,7 +36,7 @@ const Profile = ({ isAdmin = false }) => {
     if (!isAdmin) {
       const getStats = async () => {
         try {
-          const response = await api.get('/user/stats');
+          const response = await api.get('/api/user/stats');
           setStats(response.data);
         } catch (error) {
           console.error('Failed to fetch stats', error);
@@ -75,12 +75,12 @@ const Profile = ({ isAdmin = false }) => {
 
       // Update profile info
       if (name !== user.name || email !== user.email || bio !== user.bio) {
-        await api.put('/user/profile', { name, email, bio });
+        await api.put('/api/user/profile', { name, email, bio });
       }
 
       // Change password
       if (newPassword && currentPassword) {
-        await api.put('/user/password', { currentPassword, newPassword });
+        await api.put('/api/user/password', { currentPassword, newPassword });
         form.resetFields(['currentPassword', 'newPassword', 'confirmPassword']);
       } else if (newPassword && !currentPassword) {
         message.error('Please enter your current password to set a new one.');

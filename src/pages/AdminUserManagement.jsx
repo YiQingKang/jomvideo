@@ -53,6 +53,7 @@ const AdminUserManagement = () => {
         limit,
         ...(userSearchTerm && { search: userSearchTerm }),
         ...(userFilterStatus !== 'all' && { status: userFilterStatus }),
+        role: 'user', // Only fetch non-admin users
       };
       const response = await api.get('/api/admin/users', { params });
       setUsers(response.data.users);
@@ -89,7 +90,7 @@ const AdminUserManagement = () => {
 
   const handleUserStatusChange = async (userId, status) => {
     try {
-      await api.put(`/admin/users/${userId}/status`, { status });
+      await api.put(`/api/admin/users/${userId}/status`, { status });
       message.success('User status updated successfully!');
       fetchUsers(userPagination.current, userPagination.pageSize);
     } catch (error) {
@@ -296,12 +297,6 @@ const AdminUserManagement = () => {
                 Last Active: {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleDateString() : 'N/A'}
               </Text>
             </div>
-            
-            <Space>
-              <Button type="primary">Add Credits</Button>
-              <Button>Send Message</Button>
-              <Button danger onClick={() => handleUserStatusChange(selectedUser.id, 'banned')}>Ban User</Button>
-            </Space>
           </div>
         )}
       </Modal>

@@ -104,7 +104,7 @@ const VideoHistory = () => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await api.delete(`/video/${video.id}`);
+          await api.delete(`/api/video/${video.id}`);
           message.success('Video deleted successfully!');
           fetchVideos(pagination.current, pagination.pageSize); // Re-fetch videos
         } catch (error) {
