@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Backend for Video AI Platform",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js"

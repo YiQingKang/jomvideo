@@ -317,7 +317,7 @@ const AdminPanel = () => {
               <Statistic
                 title={stat.title}
                 value={stat.value}
-                prefix={stat.prefix}
+                // prefix={stat.prefix}
                 valueStyle={{ color: stat.color }}
                 prefix={
                   <span style={{ color: stat.color }}>

@@ -13,3 +13,4 @@ storage
 db/
 _tmp_files
 server/.env
+config.json

@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/user.js';
+const jwt = require('jsonwebtoken');
+const Models = require("../models");
 
-export const authenticate = async (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
     
@@ -12,7 +12,7 @@ export const authenticate = async (req, res, next) => {
     const token = authHeader.substring(7);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    const user = await User.findByPk(decoded.userId);
+    const user = await Models.user.findByPk(decoded.userId);
     
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
@@ -40,14 +40,14 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
-export const requireAdmin = async (req, res, next) => {
+const requireAdmin = async (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Admin access required' });
   }
   next();
 };
 
-export const requireCredits = (minCredits = 1) => {
+const requireCredits = (minCredits = 1) => {
   return (req, res, next) => {
     if (req.user.credits < minCredits) {
       return res.status(402).json({ 
@@ -59,3 +59,9 @@ export const requireCredits = (minCredits = 1) => {
     next();
   };
 };
+
+module.exports = {
+  authenticate,
+  requireAdmin,
+  requireCredits
+}

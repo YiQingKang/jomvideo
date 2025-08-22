@@ -1,4 +1,4 @@
-import { ValidationError, UniqueConstraintError } from 'sequelize';
+const { ValidationError, UniqueConstraintError } = require('sequelize');
 
 export const errorHandler = (error, req, res, next) => {
   console.error('Error:', error);
