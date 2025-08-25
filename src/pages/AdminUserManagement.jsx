@@ -137,7 +137,7 @@ const AdminUserManagement = () => {
       dataIndex: 'totalSpent',
       key: 'totalSpent',
       sorter: (a, b) => a.totalSpent - b.totalSpent,
-      render: (amount) => `$${amount ? amount.toFixed(2) : '0.00'}`
+      render: (amount) => `$${amount ? parseFloat(amount ?? 0).toFixed(2) : '0.00'}`
     },
     {
       title: 'Status',
@@ -160,13 +160,6 @@ const AdminUserManagement = () => {
           <Option value="banned">Banned</Option>
         </Select>
       )
-    },
-    {
-      title: 'Join Date',
-      dataIndex: 'created_at',
-      key: 'joinDate',
-      sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
-      render: (date) => new Date(date).toLocaleDateString()
     },
     {
       title: 'Actions',
@@ -258,7 +251,7 @@ const AdminUserManagement = () => {
         {selectedUser && (
           <div className="space-y-6">
             <div className="flex items-center space-x-4">
-              <Avatar size={64} icon={<UserOutlined />} />
+              {/* <Avatar size={64} icon={<UserOutlined />} /> */}
               <div>
                 <Title level={4} className="!mb-1">{selectedUser.name}</Title>
                 <Text className="text-gray-600">{selectedUser.email}</Text>

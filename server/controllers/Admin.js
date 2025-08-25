@@ -158,16 +158,10 @@ class AdminController {
         order: [['created_at', 'DESC']],
         attributes: {
           include: [
-            [Sequelize.fn('COUNT', Sequelize.col('videos.id')), 'totalVideos'],
+            [Sequelize.literal('(SELECT COUNT(*) FROM videos WHERE videos.user_id = "user".id)'), 'totalVideos'],
+            [Sequelize.literal('(SELECT SUM(amount) FROM payments WHERE payments.user_id = "user".id)'), 'totalSpent'],
           ],
         },
-        include: [{
-          model: Models.video,
-          as: 'videos',
-          attributes: [],
-          duplicating: false,
-        }],
-        group: ['user.id'],
       });
 
       res.json({
