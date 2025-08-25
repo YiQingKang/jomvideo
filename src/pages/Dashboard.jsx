@@ -7,11 +7,11 @@ import {
   TrophyOutlined,
   PlusOutlined,
   DownloadOutlined,
-  ShareAltOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api, { getDownloadUrl } from '../utils/api';
+import ShareMenu from '../components/ShareMenu';
 
 const { Title, Text } = Typography;
 
@@ -193,9 +193,7 @@ const Dashboard = () => {
                     <Button type="text" icon={<DownloadOutlined />} key="download" disabled={video.status !== 'completed'} onClick={() => handleDownload(video)}>
                       Download
                     </Button>,
-                    <Button type="text" icon={<ShareAltOutlined />} key="share" disabled={video.status !== 'completed'}>
-                      Share
-                    </Button>
+                    <ShareMenu video={video} />
                   ]}
                 >
                   <List.Item.Meta

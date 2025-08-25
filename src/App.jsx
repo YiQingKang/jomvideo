@@ -16,6 +16,7 @@ import AdminPanel from './pages/AdminPanel';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminVideoManagement from './pages/AdminVideoManagement';
 import ProtectedRoute from './components/ProtectedRoute';
+import ShareVideoPage from './pages/ShareVideoPage';
 
 const theme = {
   token: {
@@ -34,6 +35,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/videos/:id" element={<ShareVideoPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />

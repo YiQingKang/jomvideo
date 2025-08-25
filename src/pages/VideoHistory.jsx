@@ -18,12 +18,12 @@ import {
 import {
   SearchOutlined,
   DownloadOutlined,
-  ShareAltOutlined,
   DeleteOutlined,
   PlayCircleOutlined,
   FilterOutlined
 } from '@ant-design/icons';
 import api, { getDownloadUrl } from '../utils/api';
+import ShareMenu from '../components/ShareMenu';
 
 const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
@@ -88,22 +88,6 @@ const VideoHistory = () => {
       link.click();
     } catch (error) {
       message.error('Failed to get download link.');
-    }
-  };
-
-  const handleShare = (video) => {
-    if (navigator.share) {
-      navigator.share({
-        title: video.title,
-        text: `Check out this AI-generated video: ${video.title}`,
-        url: video.video_url
-      });
-    } else {
-      navigator.clipboard.writeText(video.video_url);
-      Modal.success({
-        title: 'Link Copied!',
-        content: 'Video link has been copied to clipboard.',
-      });
     }
   };
 
@@ -234,14 +218,7 @@ const VideoHistory = () => {
                         onClick={() => handleDownload(video)}
                       />
                     </Tooltip>,
-                    <Tooltip title="Share">
-                      <Button
-                        type="text"
-                        icon={<ShareAltOutlined />}
-                        disabled={video.status !== 'completed'}
-                        onClick={() => handleShare(video)}
-                      />
-                    </Tooltip>,
+                    <ShareMenu video={video} />,
                     <Tooltip title="Delete">
                       <Button
                         type="text"

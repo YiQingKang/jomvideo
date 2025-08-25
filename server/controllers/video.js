@@ -45,6 +45,30 @@ const getPresignedUrl = (key) => {
 };
 
 class VideoController {
+  static async getSharedVideo(req, res) {
+    try {
+      const video = await Models.video.findOne({
+        where: { 
+          id: req.params.id,
+          status: 'completed',
+        },
+      });
+
+      if (!video) {
+        return res.status(404).json({ message: 'Video not found' });
+      }
+
+      const videoData = video.toJSON();
+      videoData.video_url = getPresignedUrl(video.video_url);
+      videoData.thumbnail_url = getPresignedUrl(video.thumbnail_url);
+
+      res.json({ video: videoData });
+    } catch (error) {
+      console.error('Get video error:', error);
+      res.status(500).json({ message: 'Failed to fetch video' });
+    }
+  }
+
   static async getVideos(req, res) {
     try {
       const { page = 1, limit = 10, status, search } = req.query;

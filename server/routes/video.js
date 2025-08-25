@@ -3,6 +3,7 @@ const Controller = require("../controllers/video");
 
 function Routes(app, privateRoute) {
   app.get("/api/video", privateRoute, Controller.getVideos);
+  app.get("/api/video/share/:id", Controller.getSharedVideo);
   app.get("/api/video/:id", privateRoute, Controller.getVideo);
   app.get("/api/video/:id/download-url", privateRoute, Controller.getDownloadUrl);
   app.post("/api/video/generate", privateRoute, [
