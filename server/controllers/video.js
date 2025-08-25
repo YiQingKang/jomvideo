@@ -50,7 +50,7 @@ class VideoController {
       const video = await Models.video.findOne({
         where: { 
           id: req.params.id,
-          status: 'completed',
+          status: { [Op.ne]: 'deleted' },
         },
       });
 
@@ -74,7 +74,10 @@ class VideoController {
       const { page = 1, limit = 10, status, search } = req.query;
       const offset = (page - 1) * limit;
 
-      const where = { user_id: req.user.id };
+      const where = { 
+        user_id: req.user.id,
+        status: { [Op.ne]: 'deleted' },
+      }; 
       
       if (status && status !== 'all') {
         where.status = status;
@@ -120,6 +123,7 @@ class VideoController {
         where: { 
           id: req.params.id,
           user_id: req.user.id,
+          status: { [Op.ne]: 'deleted' },
         },
       });
 
@@ -315,7 +319,7 @@ class VideoController {
         return res.status(404).json({ message: 'Video not found' });
       }
 
-      await video.destroy();
+      await video.update({ status: 'deleted' });
 
       res.json({ message: 'Video deleted successfully' });
     } catch (error) {
