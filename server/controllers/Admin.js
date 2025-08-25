@@ -245,24 +245,6 @@ class AdminController {
       res.status(500).json({ message: 'Failed to fetch videos' });
     }
   };
-
-  static async deleteVideo(req, res) {
-    try {
-      const { id } = req.params;
-
-      const video = await Models.video.findByPk(id);
-      if (!video) {
-        return res.status(404).json({ message: 'Video not found' });
-      }
-
-      await video.destroy();
-
-      res.json({ message: 'Video deleted successfully' });
-    } catch (error) {
-      console.error('Delete video error:', error);
-      res.status(500).json({ message: 'Failed to delete video' });
-    }
-  };
 }
 
 module.exports = AdminController;

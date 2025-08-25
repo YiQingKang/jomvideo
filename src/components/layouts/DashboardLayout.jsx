@@ -94,11 +94,6 @@ const DashboardLayout = () => {
       onClick: () => navigate('/dashboard/profile'),
     },
     {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
-    },
-    {
       type: 'divider',
     },
     {
@@ -146,7 +141,7 @@ const DashboardLayout = () => {
           <div className="flex items-center space-x-2">
             <VideoCameraOutlined className="text-2xl text-blue-500" />
             {!collapsed && (
-              <Text className="text-xl font-bold text-gray-800">VideoAI</Text>
+              <Text className="text-xl font-bold text-gray-800">JomVideo</Text>
             )}
           </div>
         </div>
@@ -186,8 +181,7 @@ const DashboardLayout = () => {
           
           <div className="flex items-center space-x-4">
             
-            
-            {!user?.role === 'admin' && (
+          {user?.role != 'admin' && (
             <div className="flex items-center space-x-2">
               <Text className="text-sm text-gray-600">
                 {user?.credits || 0} credits

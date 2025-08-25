@@ -148,7 +148,7 @@ const Profile = ({ isAdmin = false }) => {
       {/* Profile Overview */}
       <Card>
         <Row gutter={[24, 24]} align="middle">
-          <Col xs={24} sm={6} className="text-center">
+          {/* <Col xs={24} sm={6} className="text-center">  //TODO: add upload profile picture feature
             <div className="relative inline-block">
               <Avatar
                 size={120}
@@ -173,8 +173,8 @@ const Profile = ({ isAdmin = false }) => {
                   />
                 </Upload>
               )}
-            </div>
-          </Col>
+            </div> 
+          </Col>*/}
           <Col xs={24} sm={18}>
             <Title level={3} className="!mb-1">{user?.name}</Title>
             <Text className="text-gray-600 text-lg">{user?.email}</Text>

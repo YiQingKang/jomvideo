@@ -122,7 +122,11 @@ class VideoController {
       const video = await Models.video.findOne({
         where: { 
           id: req.params.id,
-          user_id: req.user.id,
+          ...(
+            req.user.role !== 'admin'
+            ? {user_id: req.user.id}
+            : {}
+          ),          
           status: { [Op.ne]: 'deleted' },
         },
       });
@@ -133,6 +137,7 @@ class VideoController {
 
       const videoData = video.toJSON();
       videoData.thumbnail_url = getPresignedUrl(video.thumbnail_url);
+      videoData.video_url = getPresignedUrl(video.video_url);
 
       res.json({ video: videoData });
     } catch (error) {

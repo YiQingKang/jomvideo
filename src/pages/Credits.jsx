@@ -19,7 +19,7 @@ import {
   TrophyOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import api from '../utils/api';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -41,40 +41,40 @@ const Credits = () => {
       popular: false,
       features: [
         '10 video generations',
-        'HD quality (720p)',
-        'Basic templates',
-        'Standard support'
+        // 'HD quality (720p)',
+        // 'Basic templates',
+        // 'Standard support'
       ]
     },
     {
-      id: 'pro',
-      name: 'Pro Pack',
+      id: 'bundle',
+      name: 'Bundle Pack',
       credits: 50,
       price: 39.99,
       originalPrice: 49.95,
       popular: true,
       features: [
         '50 video generations',
-        'Full HD quality (1080p)',
-        'Premium templates',
-        'Priority support',
-        'Advanced settings'
+        // 'Full HD quality (1080p)',
+        // 'Premium templates',
+        // 'Priority support',
+        // 'Advanced settings'
       ]
     },
     {
-      id: 'enterprise',
-      name: 'Enterprise Pack',
+      id: 'bulk',
+      name: 'Bulk Pack',
       credits: 100,
       price: 79.99,
       originalPrice: 99.95,
       popular: false,
       features: [
         '100 video generations',
-        '4K quality (2160p)',
-        'Custom templates',
-        'Dedicated support',
-        'API access',
-        'Bulk generation'
+        // '4K quality (2160p)',
+        // 'Custom templates',
+        // 'Dedicated support',
+        // 'API access',
+        // 'Bulk generation'
       ]
     }
   ];
@@ -82,7 +82,7 @@ const Credits = () => {
   const fetchHistory = async (page = 1, pageSize = 10) => {
     setHistoryLoading(true);
     try {
-      const response = await axios.get(`/api/credit/transactions?page=${page}&limit=${pageSize}`);
+      const response = await api.get(`/api/credit/transactions?page=${page}&limit=${pageSize}`);
       setUsageHistory(response.data.transactions);
       setPagination({
         current: response.data.pagination.current,
@@ -137,7 +137,7 @@ const Credits = () => {
   const handlePurchase = async (paymentMethod) => {
     setLoading(true);
     try {
-      await axios.post('/api/credit/purchase', {
+      await api.post('/api/credit/purchase', {
         package_id: selectedPlan.id,
         payment_method: paymentMethod,
       });
@@ -192,8 +192,8 @@ const Credits = () => {
 
       {/* Credit Packages */}
       <div id="packages">
-        <Title level={3} className="text-center mb-6">Choose Your Credit Package</Title>
-        <Row gutter={[24, 24]}>
+        <Title level={3} className="text-center">Choose Your Credit Package</Title>
+        <Row gutter={[24, 24]} style={{ marginTop: '48px' }}>
           {creditPackages.map((pkg) => (
             <Col xs={24} md={8} key={pkg.id}>
               <Card
@@ -320,20 +320,11 @@ const Credits = () => {
                 loading={loading}
                 onClick={() => handlePurchase('stripe')}
               >
-                Pay with Stripe
-              </Button>
-              <Button
-                size="large"
-                className="w-full h-12"
-                loading={loading}
-                onClick={() => handlePurchase('paypal')}
-              >
-                Pay with PayPal
+                Check Out
               </Button>
             </div>
             
             <Text className="text-xs text-gray-500 block text-center">
-              Secure payment powered by Stripe and PayPal. 
               Your credits will be added instantly after payment.
             </Text>
           </div>

@@ -5,7 +5,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import AdminLoginPage from './pages/AdminLoginPage';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import GenerateVideo from './pages/GenerateVideo';
@@ -38,7 +37,7 @@ function App() {
           <Route path="/videos/:id" element={<ShareVideoPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/login" element={<LoginPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <DashboardLayout />

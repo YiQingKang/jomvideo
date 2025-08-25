@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Typography, Button, List, Avatar, Tag, Progress, message } from 'antd';
+import { Row, Col, Card, Statistic, Typography, Button, List, Avatar, Tag, Progress, message, Space } from 'antd';
 import {
   VideoCameraOutlined,
   PlayCircleOutlined,
@@ -214,13 +214,11 @@ const Dashboard = () => {
                       </div>
                     }
                     description={
-                      <div className="space-y-1">
+                      <Space>
                         <Text className="text-gray-500">Duration: {video.duration || 'N/A'}s</Text>
+                        <Text className="text-gray-500">|</Text>
                         <Text className="text-gray-500">Created: {new Date(video.created_at).toLocaleDateString()}</Text>
-                        {video.status === 'processing' && (
-                          <Progress percent={50} size="small" status="active" />
-                        )}
-                      </div>
+                      </Space>
                     }
                   />
                 </List.Item>

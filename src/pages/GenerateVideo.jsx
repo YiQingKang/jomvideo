@@ -16,7 +16,7 @@ import {
 import { VideoCameraOutlined, SendOutlined, CreditCardOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -67,7 +67,7 @@ const GenerateVideo = () => {
     setProgress(0);
 
     try {
-      const response = await axios.post('/api/video/generate', {
+      const response = await api.post('/api/video/generate', {
         title: values.prompt.substring(0, 30), // Auto-generate title
         prompt: values.prompt,
         negative_prompt: values.negative_prompt,

@@ -20,7 +20,7 @@ const RegisterPage = () => {
     });
     
     if (result.success) {
-      message.success('Registration successful. Welcome to VideoAI.');
+      message.success('Registration successful. Welcome to JomVideo.');
       navigate('/dashboard');
     } else {
       message.error(result.error);
@@ -35,7 +35,7 @@ const RegisterPage = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <VideoCameraOutlined className="text-4xl text-blue-500" />
-            <Title level={2} className="!mb-0 text-gray-800">VideoAI</Title>
+            <Title level={2} className="!mb-0 text-gray-800">JomVideo</Title>
           </div>
           <Text className="text-gray-600">Create your account and start generating videos</Text>
         </div>
@@ -140,7 +140,7 @@ const RegisterPage = () => {
             </Form.Item>
           </Form>
 
-          <Divider>or</Divider>
+          {/* <Divider>or</Divider>
 
           <Button
             icon={<GoogleOutlined />}
@@ -148,7 +148,7 @@ const RegisterPage = () => {
             onClick={() => message.info('Google registration coming soon')}
           >
             Sign up with Google
-          </Button>
+          </Button> */}
 
           <div className="text-center">
             <Text className="text-gray-600">

@@ -17,7 +17,11 @@ const LoginPage = () => {
     
     if (result.success) {
       message.success('Login successful!');
-      navigate('/dashboard');
+      console.log("testyq result.user.role", result)
+      if (result.user.role === 'admin')
+        navigate('/admin/dashboard');
+      else
+        navigate('/dashboard');
     } else {
       message.error(result.error);
     }
@@ -31,7 +35,7 @@ const LoginPage = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <VideoCameraOutlined className="text-4xl text-blue-500" />
-            <Title level={2} className="!mb-0 text-gray-800">VideoAI</Title>
+            <Title level={2} className="!mb-0 text-gray-800">JomVideo</Title>
           </div>
           <Text className="text-gray-600">Welcome back! Sign in to your account</Text>
         </div>
@@ -70,13 +74,13 @@ const LoginPage = () => {
               />
             </Form.Item>
 
-            <Form.Item className="mb-2">
+            {/* <Form.Item className="mb-2"> //TODO: add forgot password feature
               <div className="flex justify-between items-center">
                 <Link to="/forgot-password" className="text-blue-500 hover:text-blue-600">
                   Forgot password?
                 </Link>
               </div>
-            </Form.Item>
+            </Form.Item> */}
 
             <Form.Item>
               <Button
@@ -90,7 +94,7 @@ const LoginPage = () => {
             </Form.Item>
           </Form>
 
-          <Divider>or</Divider>
+          {/* <Divider>or</Divider>
 
           <Button
             icon={<GoogleOutlined />}
@@ -98,7 +102,7 @@ const LoginPage = () => {
             onClick={() => message.info('Google login coming soon!')}
           >
             Continue with Google
-          </Button>
+          </Button> */}
 
           <div className="text-center">
             <Text className="text-gray-600">

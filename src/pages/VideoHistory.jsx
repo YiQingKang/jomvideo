@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Card, 
-  Row, 
-  Col, 
-  Button, 
-  Tag, 
-  Input, 
-  Select, 
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Tag,
+  Input,
+  Select,
   Empty,
-  Modal,
   Typography,
   Space,
   Tooltip,
@@ -24,6 +23,7 @@ import {
 } from '@ant-design/icons';
 import api, { getDownloadUrl } from '../utils/api';
 import ShareMenu from '../components/ShareMenu';
+import VideoPreviewModal from '../components/VideoPreviewModal';
 
 const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
@@ -191,9 +191,14 @@ const VideoHistory = () => {
                   cover={
                     <div className="relative">
                       <img
-                        src={video.thumbnail_url}
+                        src={video.thumbnail_url || "/images/video-placeholder.png"}
                         alt={video.title}
                         className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          console.log("testyq e")
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/images/video-placeholder.png";
+                        }}
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <Button
@@ -270,44 +275,11 @@ const VideoHistory = () => {
         </>
       )}
 
-      {/* Video Preview Modal */}
-      <Modal
-        title={selectedVideo?.title}
-        open={!!selectedVideo}
+      <VideoPreviewModal
+        video={selectedVideo}
+        visible={!!selectedVideo}
         onCancel={() => setSelectedVideo(null)}
-        footer={null}
-        width={800}
-      >
-        {selectedVideo && (
-          <div className="space-y-4">
-            <video
-              controls
-              className="w-full rounded-lg"
-              poster={selectedVideo.thumbnail_url}
-            >
-              <source src={selectedVideo.video_url} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <Text className="font-medium">Prompt:</Text>
-                <Paragraph className="text-gray-600 mt-1">
-                  {selectedVideo.prompt}
-                </Paragraph>
-              </div>
-              <div>
-                <Text className="font-medium">Details:</Text>
-                <div className="mt-1 space-y-1">
-                  <div>Duration: {selectedVideo.duration}s</div>
-                  <div>Resolution: {selectedVideo.settings?.resolution}</div>
-                  <div>Orientation: {selectedVideo.settings?.orientation}</div>
-                  <div>Credits Used: {selectedVideo.credits_used}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
+      />
     </div>
   );
 };

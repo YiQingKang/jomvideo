@@ -1,31 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Card, 
-  Table, 
-  Button, 
-  Tag, 
+import {
+  Card,
+  Table,
+  Button,
+  Tag,
   Typography,
   Input,
   Select,
   Modal,
   message,
-  Space,
   Pagination
 } from 'antd';
 import { 
   SearchOutlined,
-  DeleteOutlined,
   EyeOutlined
 } from '@ant-design/icons';
 import api from '../utils/api';
+import VideoPreviewModal from '../components/VideoPreviewModal';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
 const { Option } = Select;
 
 const AdminVideoManagement = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const [videoSearchTerm, setVideoSearchTerm] = useState('');
   const [videoPagination, setVideoPagination] = useState({ current: 1, pageSize: 10, total: 0 });
@@ -64,17 +64,6 @@ const AdminVideoManagement = () => {
 
   const handleVideoPageChange = (page, pageSize) => {
     setVideoPagination(prev => ({ ...prev, current: page, pageSize }));
-  };
-
-  const handleDeleteVideo = async (videoId) => {
-    try {
-      await api.delete(`/api/admin/videos/${videoId}`);
-      message.success('Video deleted successfully!');
-      fetchVideos(videoPagination.current, videoPagination.pageSize);
-    } catch (error) {
-      message.error('Failed to delete video.');
-      console.error('Error deleting video:', error);
-    }
   };
 
   const videoColumns = [
@@ -126,21 +115,7 @@ const AdminVideoManagement = () => {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Space>
-          <Button type="text" icon={<EyeOutlined />} />
-          <Button 
-            type="text" 
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              Modal.confirm({
-                title: 'Delete Video',
-                content: `Are you sure you want to delete "${record.title}"?`,
-                onOk: () => handleDeleteVideo(record.id)
-              });
-            }}
-          />
-        </Space>
+        <Button type="text" icon={<EyeOutlined />} onClick={() => setSelectedVideo(record)} />
       )
     }
   ];
@@ -175,6 +150,12 @@ const AdminVideoManagement = () => {
           }}
         />
       </Card>
+
+      <VideoPreviewModal
+        video={selectedVideo}
+        visible={!!selectedVideo}
+        onCancel={() => setSelectedVideo(null)}
+      />
     </div>
   );
 };

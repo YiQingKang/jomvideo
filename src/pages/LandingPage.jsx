@@ -37,19 +37,19 @@ const LandingPage = () => {
       name: 'Starter',
       credits: 10,
       price: '$9.99',
-      features: ['10 video generations', 'HD quality', 'Basic templates']
+      features: ['10 video generations']
     },
     {
-      name: 'Pro',
+      name: 'Bundle',
       credits: 50,
       price: '$39.99',
-      features: ['50 video generations', '4K quality', 'Premium templates', 'Priority support']
+      features: ['50 video generations']
     },
     {
-      name: 'Enterprise',
+      name: 'Bulk',
       credits: 100,
       price: '$79.99',
-      features: ['100 video generations', '8K quality', 'Custom templates', 'Dedicated support']
+      features: ['100 video generations']
     }
   ];
 
@@ -60,7 +60,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <PlayCircleOutlined className="text-2xl text-blue-500" />
-            <Title level={3} className="!mb-0 text-gray-800">VideoAI</Title>
+            <Title level={3} className="!mb-0 text-gray-800">JomVideo</Title>
           </div>
           <div className="flex items-center space-x-4">
             <Button type="text" onClick={() => navigate('/login')}>
@@ -94,13 +94,13 @@ const LandingPage = () => {
             >
               Start Creating for Free
             </Button>
-            <Button 
+            {/* <Button 
               size="large" 
               className="h-12 px-8 text-lg"
               icon={<PlayCircleOutlined />}
             >
               Watch Demo
-            </Button>
+            </Button> */}
           </div>
         </div>
       </section>
@@ -151,7 +151,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <Title level={2} className="!text-4xl !mb-4">
-              Why Choose VideoAI?
+              Why Choose JomVideo?
             </Title>
             <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
               Experience the future of video creation with our advanced AI platform
@@ -249,7 +249,7 @@ const LandingPage = () => {
             className="h-12 px-8 text-lg bg-white text-blue-500 border-white hover:bg-gray-100"
             onClick={() => navigate('/register')}
           >
-            Start Your Free Trial
+            Get Started for Free
           </Button>
         </div>
       </section>
@@ -259,10 +259,10 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <PlayCircleOutlined className="text-2xl text-blue-400" />
-            <Title level={3} className="!text-white !mb-0">VideoAI</Title>
+            <Title level={3} className="!text-white !mb-0">JomVideo</Title>
           </div>
           <Paragraph className="text-gray-400 mb-0">
-            © 2025 VideoAI. All rights reserved.
+            © 2025 JomVideo. All rights reserved.
           </Paragraph>
         </div>
       </footer>

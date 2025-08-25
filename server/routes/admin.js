@@ -20,7 +20,6 @@ function Routes(app, privateRoute) {
   app.get("/api/admin/users", authenticate, requireAdmin, Controller.getUsers);
   app.put("/api/admin/users/:id/status", authenticate, requireAdmin, Controller.updateUserStatus);
   app.get("/api/admin/videos", authenticate, requireAdmin, Controller.getVideos);
-  app.delete("/api/admin/videos/:id", authenticate, requireAdmin, Controller.deleteVideo);
 }
 
 module.exports = Routes;
