@@ -66,8 +66,8 @@ class CreditController {
       // Define credit packages
       const packages = {
         starter: { credits: 10, price: 9.99 },
-        pro: { credits: 50, price: 39.99 },
-        enterprise: { credits: 100, price: 79.99 },
+        bundle: { credits: 50, price: 39.99 },
+        bulk: { credits: 100, price: 79.99 },
       };
       
       const selectedPackage = packages[package_id];

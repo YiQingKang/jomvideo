@@ -1,0 +1,23 @@
+.responsive-table-card {
+  margin-bottom: 16px;
+}
+
+.responsive-table-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.responsive-table-row:last-child {
+  border-bottom: none;
+}
+
+.responsive-table-label {
+  font-weight: 600;
+  color: #001529;
+}
+
+.responsive-table-value {
+  text-align: right;
+}

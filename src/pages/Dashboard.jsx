@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Typography, Button, List, Avatar, Tag, Progress, message, Space } from 'antd';
+import { Row, Col, Card, Statistic, Typography, Button, Tag, Progress, message, Space, Avatar } from 'antd';
 import {
   VideoCameraOutlined,
   PlayCircleOutlined,
@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api, { getDownloadUrl } from '../utils/api';
 import ShareMenu from '../components/ShareMenu';
+import ResponsiveTable from '../components/ResponsiveTable/ResponsiveTable';
 
 const { Title, Text } = Typography;
 
@@ -87,6 +88,57 @@ const Dashboard = () => {
       description: 'Browse all your videos',
       icon: <PlayCircleOutlined className="text-2xl text-purple-500" />,
       action: () => navigate('/dashboard/history')
+    }
+  ];
+
+  const recentVideoColumns = [
+    {
+      title: 'Video',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text, record) => (
+        <div className="flex items-center space-x-2 flex-wrap">
+          <Avatar 
+            src={record.thumbnail_url} 
+            shape="square" 
+            size={64}
+            icon={<VideoCameraOutlined />}
+          />
+          <div>
+            <Text className="font-medium">{record.title}</Text>
+            <br />
+            <Text className="text-gray-500">Duration: {record.duration || 'N/A'}s</Text>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <Tag color={status === 'completed' ? 'green' : (status === 'failed' ? 'red' : 'default')}>
+          {status}
+        </Tag>
+      )
+    },
+    {
+      title: 'Created',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date) => new Date(date).toLocaleDateString()
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (text, record) => (
+        <Space className="flex items-center space-x-2 flex-wrap">
+          <Button type="text" icon={<DownloadOutlined />} key="download" disabled={record.status !== 'completed'} onClick={() => handleDownload(record)}>
+            Download
+          </Button>
+          <ShareMenu video={record} />
+        </Space>
+      )
     }
   ];
 
@@ -184,45 +236,11 @@ const Dashboard = () => {
             className="h-full"
             loading={loading}
           >
-            <List
-              itemLayout="horizontal"
+            <ResponsiveTable
+              columns={recentVideoColumns}
               dataSource={recentVideos}
-              renderItem={(video) => (
-                <List.Item
-                  actions={[
-                    <Button type="text" icon={<DownloadOutlined />} key="download" disabled={video.status !== 'completed'} onClick={() => handleDownload(video)}>
-                      Download
-                    </Button>,
-                    <ShareMenu video={video} />
-                  ]}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar 
-                        src={video.thumbnail_url} 
-                        shape="square" 
-                        size={64}
-                        icon={<VideoCameraOutlined />}
-                      />
-                    }
-                    title={
-                      <div className="flex items-center space-x-2">
-                        <Text className="font-medium">{video.title}</Text>
-                        <Tag color={video.status === 'completed' ? 'green' : (video.status === 'failed' ? 'red' : 'default')}>
-                          {video.status}
-                        </Tag>
-                      </div>
-                    }
-                    description={
-                      <Space>
-                        <Text className="text-gray-500">Duration: {video.duration || 'N/A'}s</Text>
-                        <Text className="text-gray-500">|</Text>
-                        <Text className="text-gray-500">Created: {new Date(video.created_at).toLocaleDateString()}</Text>
-                      </Space>
-                    }
-                  />
-                </List.Item>
-              )}
+              pagination={false}
+              rowKey="id"
             />
           </Card>
         </Col>

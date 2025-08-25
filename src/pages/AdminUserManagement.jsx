@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Card, 
-  Table, 
   Button, 
   Tag, 
   Statistic, 
@@ -29,6 +28,7 @@ import {
   EyeOutlined
 } from '@ant-design/icons';
 import api from '../utils/api';
+import ResponsiveTable from '../components/ResponsiveTable/ResponsiveTable';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -224,7 +224,7 @@ const AdminUserManagement = () => {
           </Space>
         }
       >
-        <Table
+        <ResponsiveTable
           columns={userColumns}
           dataSource={users}
           loading={loading}

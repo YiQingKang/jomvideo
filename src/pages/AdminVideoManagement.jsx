@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
-  Table,
   Button,
   Tag,
   Typography,
@@ -17,6 +16,7 @@ import {
 } from '@ant-design/icons';
 import api from '../utils/api';
 import VideoPreviewModal from '../components/VideoPreviewModal';
+import ResponsiveTable from '../components/ResponsiveTable/ResponsiveTable';
 
 const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
@@ -135,7 +135,7 @@ const AdminVideoManagement = () => {
           />
         }
       >
-        <Table
+        <ResponsiveTable
           columns={videoColumns}
           dataSource={videos}
           loading={loading}

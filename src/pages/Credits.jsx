@@ -7,7 +7,6 @@ import {
   Typography, 
   List, 
   Tag, 
-  Table,
   Modal,
   message
 } from 'antd';
@@ -20,6 +19,7 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
+import ResponsiveTable from '../components/ResponsiveTable/ResponsiveTable';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -259,7 +259,7 @@ const Credits = () => {
 
       {/* Usage History */}
       <Card title="Credit Usage History" extra={<TrophyOutlined />}>
-        <Table
+        <ResponsiveTable
           columns={usageColumns}
           dataSource={usageHistory}
           loading={historyLoading}
