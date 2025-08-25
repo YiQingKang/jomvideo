@@ -1,6 +1,15 @@
 const { body, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
+const axios = require('axios');
 const Models = require("../models");
+const AWS = require('aws-sdk');
+
+// Configure AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
 
 // Helper function to calculate credits needed
 const calculateCreditsNeeded = (settings) => {
@@ -15,37 +24,23 @@ const calculateCreditsNeeded = (settings) => {
   return credits * durationMultiplier;
 };
 
-// Mock video generation process
-const processVideoGeneration = async (videoId) => {
+// Helper function to get presigned URL
+const getPresignedUrl = (key) => {
+  if (!key) return null;
   try {
-    // Simulate processing time
-    setTimeout(async () => {
-      const video = await Models.video.findByPk(videoId);
-      if (!video) return;
-
-      await video.update({
-        status: 'processing',
-      });
-
-      // Simulate longer processing time
-      setTimeout(async () => {
-        await video.update({
-          status: 'completed',
-          video_url: 'https://example.com/generated-video.mp4',
-          thumbnail_url: 'https://example.com/thumbnail.jpg',
-          duration: 30,
-        });
-      }, 5000);
-    }, 1000);
+    const url = new URL(key);
+    let s3Key = url.pathname;
+    if (s3Key.startsWith("/")) {
+      s3Key = s3Key.replace("/", "");
+    }
+    return s3.getSignedUrl('getObject', {
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: s3Key,
+      Expires: 60 * 60, // 1 hour
+    });
   } catch (error) {
-    console.error('Video processing error:', error);
-    await Models.video.update(
-      { 
-        status: 'failed', 
-        error_message: 'Generation failed' 
-      },
-      { where: { id: videoId } }
-    );
+    console.error('Invalid URL for presigning:', key);
+    return null;
   }
 };
 
@@ -75,8 +70,14 @@ class VideoController {
         order: [['created_at', 'DESC']],
       });
 
+      const videosWithPresignedUrls = videos.map(video => {
+        const videoData = video.toJSON();
+        videoData.thumbnail_url = getPresignedUrl(video.thumbnail_url);
+        return videoData;
+      });
+
       res.json({
-        videos,
+        videos: videosWithPresignedUrls,
         pagination: {
           current: parseInt(page),
           pages: Math.ceil(count / limit),
@@ -102,10 +103,36 @@ class VideoController {
         return res.status(404).json({ message: 'Video not found' });
       }
 
-      res.json({ video });
+      const videoData = video.toJSON();
+      videoData.thumbnail_url = getPresignedUrl(video.thumbnail_url);
+
+      res.json({ video: videoData });
     } catch (error) {
       console.error('Get video error:', error);
       res.status(500).json({ message: 'Failed to fetch video' });
+    }
+  }
+
+  static async getDownloadUrl(req, res) {
+    try {
+      const video = await Models.video.findOne({
+        where: {
+          id: req.params.id,
+          user_id: req.user.id,
+          status: 'completed',
+        },
+      });
+
+      if (!video) {
+        return res.status(404).json({ message: 'Video not found' });
+      }
+
+      const downloadUrl = getPresignedUrl(video.video_url);
+
+      res.json({ downloadUrl });
+    } catch (error) {
+      console.error('Get download URL error:', error);
+      res.status(500).json({ message: 'Failed to get download URL' });
     }
   }
 
@@ -143,6 +170,9 @@ class VideoController {
         prompt: prompt.trim(),
         negative_prompt: negative_prompt?.trim(),
         settings,
+        duration: settings.duration,
+        resolution: settings.resolution,
+        orientation: settings.orientation,
         status: 'pending',
         credits_used: creditsNeeded,
       }, { transaction });
@@ -163,10 +193,32 @@ class VideoController {
         balance_after: req.user.credits - creditsNeeded,
       }, { transaction });
 
-      await transaction.commit();
+      // Construct the prompt for BytePlus
+      const byteplusPrompt = `${prompt.trim()} --ratio ${settings.ratio || '16:9'} --resolution ${settings.resolution || '720p'} --duration ${settings.duration || 5} --camerafixed ${settings.camerafixed || false}`;
 
-      // Start video generation process (mock implementation)
-      processVideoGeneration(video.id);
+      // Call BytePlus API
+      const byteplusResponse = await axios.post('https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks', {
+        model: 'seedance-1-0-lite-t2v-250428',
+        content: [
+          {
+            type: 'text',
+            text: byteplusPrompt,
+          },
+        ],
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.BYTEPLUS_API_KEY}`,
+        }
+      });
+
+      // Update video with task_id
+      await video.update({
+        task_id: byteplusResponse.data.id,
+        status: 'processing',
+      }, { transaction });
+
+
+      await transaction.commit();
 
       res.status(201).json({
         message: 'Video generation started',

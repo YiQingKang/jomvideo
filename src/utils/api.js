@@ -97,4 +97,8 @@ api.interceptors.response.use(
   }
 );
 
+export const getDownloadUrl = (videoId) => {
+  return api.get(`/api/video/${videoId}/download-url`);
+};
+
 export default api;

@@ -23,9 +23,9 @@ import {
   PlayCircleOutlined,
   FilterOutlined
 } from '@ant-design/icons';
-import api from '../utils/api';
+import api, { getDownloadUrl } from '../utils/api';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
 const { Option } = Select;
 
@@ -77,6 +77,18 @@ const VideoHistory = () => {
 
   const handlePageChange = (page, pageSize) => {
     setPagination(prev => ({ ...prev, current: page, pageSize }));
+  };
+
+  const handleDownload = async (video) => {
+    try {
+      const response = await getDownloadUrl(video.id);
+      const link = document.createElement('a');
+      link.href = response.data.downloadUrl;
+      link.download = `${video.title}.mp4`;
+      link.click();
+    } catch (error) {
+      message.error('Failed to get download link.');
+    }
   };
 
   const handleShare = (video) => {
@@ -219,12 +231,7 @@ const VideoHistory = () => {
                         type="text"
                         icon={<DownloadOutlined />}
                         disabled={video.status !== 'completed'}
-                        onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = video.video_url;
-                          link.download = `${video.title}.mp4`;
-                          link.click();
-                        }}
+                        onClick={() => handleDownload(video)}
                       />
                     </Tooltip>,
                     <Tooltip title="Share">

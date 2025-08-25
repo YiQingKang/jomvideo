@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Statistic, Typography, Button, List, Avatar, Tag, Progress } from 'antd';
+import { Row, Col, Card, Statistic, Typography, Button, List, Avatar, Tag, Progress, message } from 'antd';
 import {
   VideoCameraOutlined,
   PlayCircleOutlined,
@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import api, { getDownloadUrl } from '../utils/api';
 
 const { Title, Text } = Typography;
 
@@ -32,8 +32,8 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const [statsResponse, videosResponse] = await Promise.all([
-          axios.get('/api/user/stats'),
-          axios.get('/api/video?limit=5')
+          api.get('/api/user/stats'),
+          api.get('/api/video?limit=5')
         ]);
 
         const { totalVideos, totalCreditsUsed, completedVideos } = statsResponse.data;
@@ -56,6 +56,18 @@ const Dashboard = () => {
 
     fetchDashboardData();
   }, []);
+
+  const handleDownload = async (video) => {
+    try {
+      const response = await getDownloadUrl(video.id);
+      const link = document.createElement('a');
+      link.href = response.data.downloadUrl;
+      link.download = `${video.title}.mp4`;
+      link.click();
+    } catch (error) {
+      message.error('Failed to get download link.');
+    }
+  };
 
   const quickActions = [
     {
@@ -178,7 +190,7 @@ const Dashboard = () => {
               renderItem={(video) => (
                 <List.Item
                   actions={[
-                    <Button type="text" icon={<DownloadOutlined />} key="download" disabled={video.status !== 'completed'}>
+                    <Button type="text" icon={<DownloadOutlined />} key="download" disabled={video.status !== 'completed'} onClick={() => handleDownload(video)}>
                       Download
                     </Button>,
                     <Button type="text" icon={<ShareAltOutlined />} key="share" disabled={video.status !== 'completed'}>
@@ -198,7 +210,7 @@ const Dashboard = () => {
                     title={
                       <div className="flex items-center space-x-2">
                         <Text className="font-medium">{video.title}</Text>
-                        <Tag color={video.status === 'completed' ? 'green' : (video.status === 'failed' ? 'red' : 'processing')}>
+                        <Tag color={video.status === 'completed' ? 'green' : (video.status === 'failed' ? 'red' : 'default')}>
                           {video.status}
                         </Tag>
                       </div>

@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const path = require('path');
 const APIRoutes = require("./routes");
 require('dotenv').config();
+require('./cron/video');
 
 const app = express();
 

@@ -79,7 +79,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 1,
     },
-    external_job_id: {
+    task_id: {
       type: DataTypes.STRING,
       allowNull: true,
       comment: 'Job ID from external video generation API',
