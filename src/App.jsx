@@ -16,6 +16,9 @@ import AdminUserManagement from './pages/AdminUserManagement';
 import AdminVideoManagement from './pages/AdminVideoManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import ShareVideoPage from './pages/ShareVideoPage';
+import CancellationPolicy from './pages/CancellationPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 const theme = {
   token: {
@@ -37,6 +40,9 @@ function App() {
           <Route path="/videos/:id" element={<ShareVideoPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/admin/login" element={<LoginPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>

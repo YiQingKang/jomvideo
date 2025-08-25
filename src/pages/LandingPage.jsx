@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button, Card, Typography, Row, Col, Statistic } from 'antd';
 import { 
   PlayCircleOutlined, 
@@ -8,8 +9,9 @@ import {
   ArrowRightOutlined 
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import MainLayout from '../components/layouts/MainLayout';
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -54,25 +56,7 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <PlayCircleOutlined className="text-2xl text-blue-500" />
-            <Title level={3} className="!mb-0 text-gray-800">JomVideo</Title>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button type="text" onClick={() => navigate('/login')}>
-              Sign In
-            </Button>
-            <Button type="primary" onClick={() => navigate('/register')}>
-              Get Started
-            </Button>
-          </div>
-        </div>
-      </nav>
-
+    <MainLayout>
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 to-purple-50 py-20">
         <div className="max-w-7xl mx-auto px-6 text-center">
@@ -253,20 +237,7 @@ const LandingPage = () => {
           </Button>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <PlayCircleOutlined className="text-2xl text-blue-400" />
-            <Title level={3} className="!text-white !mb-0">JomVideo</Title>
-          </div>
-          <Paragraph className="text-gray-400 mb-0">
-            © 2025 JomVideo. All rights reserved.
-          </Paragraph>
-        </div>
-      </footer>
-    </div>
+    </MainLayout>
   );
 };
 
