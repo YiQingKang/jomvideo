@@ -10,6 +10,40 @@ const generateToken = (userId) => {
 };
 
 class AdminController {
+  static async getStats(req, res) {
+    try {
+      const totalUsers = await Models.user.count();
+      const totalVideos = await Models.video.count();
+      const totalCreditsUsed = await Models.video.sum('credits_used');
+      const totalPayments = await Models.payment.sum('amount');
+
+      const recentVideos = await Models.video.findAll({
+        limit: 5,
+        order: [['created_at', 'DESC']],
+        include: [{ model: Models.user, attributes: ['id', 'name', 'email'] }],
+      });
+
+      const recentUsers = await Models.user.findAll({
+        limit: 5,
+        order: [['created_at', 'DESC']],
+      });
+
+      res.json({
+        stats: {
+          totalUsers,
+          totalVideos,
+          totalCreditsUsed,
+          totalPayments,
+        },
+        recentVideos,
+        recentUsers,
+      });
+    } catch (error) {
+      console.error('Get stats error:', error);
+      res.status(500).json({ message: 'Failed to fetch stats' });
+    }
+  }
+
   static async register(req, res) {
     try {
       const errors = validationResult(req);

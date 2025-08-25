@@ -16,6 +16,7 @@ function Routes(app, privateRoute) {
   app.post("/api/admin/logout", privateRoute, Controller.logout);
 
   // Admin specific routes
+  app.get("/api/admin/stats", authenticate, requireAdmin, Controller.getStats);
   app.get("/api/admin/users", authenticate, requireAdmin, Controller.getUsers);
   app.put("/api/admin/users/:id/status", authenticate, requireAdmin, Controller.updateUserStatus);
   app.get("/api/admin/videos", authenticate, requireAdmin, Controller.getVideos);
