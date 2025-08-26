@@ -11,6 +11,9 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-    allowedHosts: "*"
+    allowedHosts: [
+      'www.jomvideo.ai',
+      "jomvideo.ai"
+    ],
   }
 })
