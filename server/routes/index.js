@@ -1,4 +1,4 @@
-const { authenticate } = require('../middleware/auth');
+const { authenticate, logRequest } = require('../middleware/auth');
 const fs = require('fs');
 const path = require('path');
 const basename = path.basename(__filename);
@@ -17,7 +17,7 @@ module.exports = function (app) {
     })
     .forEach(file => {
       const route = require(path.join(__dirname, file));
-      route(app, authenticate);
+      route(app, authenticate, logRequest);
     });
   }
 };

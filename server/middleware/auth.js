@@ -1,6 +1,36 @@
 const jwt = require('jsonwebtoken');
 const Models = require("../models");
 
+const logRequest = async (req, res, next) => {
+  if (req.method !== 'GET') {
+    const logEntry = {
+      method: req.method,
+      url: req.originalUrl,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent'],
+      request_body: JSON.stringify(req.body),
+      user_id: req.user ? req.user.id : null,
+    };
+
+    const originalSend = res.send;
+    res.send = function (body) {
+      res.locals.responseBody = body;
+      originalSend.apply(res, arguments);
+    };
+
+    res.on('finish', async () => {
+      logEntry.response_status_code = res.statusCode;
+      logEntry.response_body = res.locals.responseBody ? JSON.stringify(res.locals.responseBody) : null;
+      try {
+        await Models.request_log.create(logEntry);
+      } catch (error) {
+        console.error('Error logging request:', error);
+      }
+    });
+  }
+  next();
+};
+
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
@@ -27,7 +57,8 @@ const authenticate = async (req, res, next) => {
     }
 
     req.user = user;
-    next();
+    logRequest(req, res, next);
+
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ message: 'Invalid token' });
@@ -63,5 +94,6 @@ const requireCredits = (minCredits = 1) => {
 module.exports = {
   authenticate,
   requireAdmin,
-  requireCredits
-}
+  requireCredits,
+  logRequest
+};

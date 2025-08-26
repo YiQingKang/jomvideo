@@ -25,6 +25,9 @@ class AuthController {
       if (existingUser) {
         return res.status(409).json({ message: 'Email already registered' });
       }
+      if (!email.includes("@appbaystudio.com")) {
+        return res.status(409).json({ message: 'App is still in development and open to selected email addresses only. Stay tune.' });
+      }
 
       const user = await Models.user.create({
         name: name.trim(),
