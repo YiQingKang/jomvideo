@@ -3,9 +3,12 @@ const axios = require('axios');
 const { Op } = require('sequelize');
 const Models = require('../models');
 const AWS = require('aws-sdk');
-const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 // Configure AWS S3
 const s3 = new AWS.S3({
