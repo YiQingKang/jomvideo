@@ -131,6 +131,18 @@ class CreditController {
       res.status(500).json({ message: 'Failed to process purchase' });
     }
   }
+
+  static async gkashPayment(req, res) {
+    try {
+      return res.json({
+        success: true,
+        body: req.body
+      });
+    } catch (error) {
+      console.error('Purchase error:', error)
+      res.status(500).json({ message: 'Failed to fetch transactions' });
+    }
+  }
 }
 
 module.exports = CreditController;
