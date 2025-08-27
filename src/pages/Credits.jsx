@@ -347,7 +347,7 @@ const Credits = () => {
                 loading={loading}
                 onClick={() => handlePurchase('stripe')}
               >
-                Check Out with Stripe
+                Pay (Testing only)
               </Button>
               <Divider>OR</Divider>
               <Button

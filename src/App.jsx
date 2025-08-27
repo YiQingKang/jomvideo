@@ -19,6 +19,8 @@ import ShareVideoPage from './pages/ShareVideoPage';
 import CancellationPolicy from './pages/CancellationPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentFailed from './pages/PaymentFailed';
 
 const theme = {
   token: {
@@ -43,7 +45,8 @@ function App() {
           <Route path="/cancellation-policy" element={<CancellationPolicy />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/admin/login" element={<LoginPage />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-failed" element={<PaymentFailed />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <DashboardLayout />

@@ -148,7 +148,7 @@ class CreditController {
       } = process.env;
 
       const version = '1.5.5';
-      const v_cartid = `jomvideo-${req.user.id}-${Date.now()}`;
+      const v_cartid = `jomvideo__${req.user.id}__${Date.now()}`;
       const v_currency = 'MYR';
       const v_amount = selectedPackage.price;
 
