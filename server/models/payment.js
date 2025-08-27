@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     provider: {
-      type: DataTypes.ENUM('stripe', 'paypal'),
+      type: DataTypes.ENUM('gkash'),
       allowNull: false,
     },
     provider_payment_id: {
