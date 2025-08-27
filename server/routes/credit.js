@@ -8,7 +8,9 @@ function Routes(app, privateRoute) {
     body('package_id').notEmpty().withMessage('Package ID is required'),
     body('payment_method').isIn(['stripe', 'paypal']).withMessage('Invalid payment method'),
   ], Controller.purchaseCredits);
-  app.post("/api/credit/gkashpayment", privateRoute, Controller.gkashPayment)
+  app.post("/api/credit/prepare-gkash-payment", privateRoute, [
+    body('package_id').notEmpty().withMessage('Package ID is required'),
+  ], Controller.prepareGkashPayment);
 }
 
 module.exports = Routes;

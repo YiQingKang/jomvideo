@@ -101,4 +101,8 @@ export const getDownloadUrl = (videoId) => {
   return api.get(`/api/video/${videoId}/download-url`);
 };
 
+export const prepareGkashPayment = (packageId) => {
+  return api.post('/api/credit/prepare-gkash-payment', { package_id: packageId });
+}
+
 export default api;

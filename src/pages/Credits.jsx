@@ -8,7 +8,8 @@ import {
   List, 
   Tag, 
   Modal,
-  message
+  message,
+  Divider
 } from 'antd';
 import { 
   CreditCardOutlined, 
@@ -18,7 +19,7 @@ import {
   TrophyOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
-import api from '../utils/api';
+import api, { prepareGkashPayment } from '../utils/api';
 import ResponsiveTable from '../components/ResponsiveTable/ResponsiveTable';
 
 const { Title, Text, Paragraph } = Typography;
@@ -150,6 +151,32 @@ const Credits = () => {
     } catch (error) {
       message.error(error.response?.data?.message || 'Payment failed. Please try again.');
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGkashPurchase = async () => {
+    setLoading(true);
+    try {
+      const { data } = await prepareGkashPayment(selectedPlan.id);
+      
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = data.postUrl;
+      
+      for (const key in data.formData) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = data.formData[key];
+        form.appendChild(input);
+      }
+      
+      document.body.appendChild(form);
+      form.submit();
+
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Failed to initiate Gkash payment.');
       setLoading(false);
     }
   };
@@ -320,7 +347,16 @@ const Credits = () => {
                 loading={loading}
                 onClick={() => handlePurchase('stripe')}
               >
-                Check Out
+                Check Out with Stripe
+              </Button>
+              <Divider>OR</Divider>
+              <Button
+                size="large"
+                className="w-full h-12"
+                loading={loading}
+                onClick={handleGkashPurchase}
+              >
+                Pay with Gkash
               </Button>
             </div>
             

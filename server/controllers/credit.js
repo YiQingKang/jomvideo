@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const Models = require("../models");
+const crypto = require('crypto');
 
 // Mock payment processing function
 const processPayment = async ({ amount, method, user_id }) => {
@@ -12,6 +13,12 @@ const processPayment = async ({ amount, method, user_id }) => {
     amount,
     status: 'completed',
   };
+};
+
+const packages = {
+  starter: { credits: 10, price: 9.99 },
+  bundle: { credits: 50, price: 39.99 },
+  bulk: { credits: 100, price: 79.99 },
 };
 
 class CreditController {
@@ -62,13 +69,6 @@ class CreditController {
       }
 
       const { package_id, payment_method } = req.body;
-      
-      // Define credit packages
-      const packages = {
-        starter: { credits: 10, price: 9.99 },
-        bundle: { credits: 50, price: 39.99 },
-        bulk: { credits: 100, price: 79.99 },
-      };
       
       const selectedPackage = packages[package_id];
       if (!selectedPackage) {
@@ -132,15 +132,46 @@ class CreditController {
     }
   }
 
-  static async gkashPayment(req, res) {
+  static async prepareGkashPayment(req, res) {
     try {
-      return res.json({
-        success: true,
-        body: req.body
+      const { package_id } = req.body;
+      const selectedPackage = packages[package_id];
+
+      if (!selectedPackage) {
+        return res.status(400).json({ message: 'Invalid package selected' });
+      }
+
+      const {
+        GKASH_CID: CID,
+        GKASH_SIGNATURE_KEY: signatureKey,
+        GKASH_API_URL: postUrl,
+      } = process.env;
+
+      const version = '1.5.5';
+      const v_cartid = `jomvideo-${req.user.id}-${Date.now()}`;
+      const v_currency = 'MYR';
+      const v_amount = selectedPackage.price;
+
+      const amountFormatted = (v_amount * 100).toFixed(0).padStart(3, '0');
+
+      const signatureString = `${signatureKey};${CID};${v_cartid};${amountFormatted};${v_currency}`.toUpperCase();
+      
+      const signature = crypto.createHash('sha512').update(signatureString).digest('hex');
+
+      res.json({
+        postUrl,
+        formData: {
+          version,
+          CID,
+          v_cartid,
+          v_currency,
+          v_amount,
+          signature,
+        }
       });
     } catch (error) {
-      console.error('Purchase error:', error)
-      res.status(500).json({ message: 'Failed to fetch transactions' });
+      console.error('Gkash preparation error:', error)
+      res.status(500).json({ message: 'Failed to prepare Gkash payment' });
     }
   }
 }
